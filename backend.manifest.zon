@@ -10,6 +10,30 @@
     // Loop-style (the generated headless main drives a fixed-frame tick loop). No
     // params: pure-Zig, zero native deps, and the LINK fragment is EMPTY — null has
     // no artifact to link (the enum path's `.null => {}` emitted nothing).
+    // Canonical provider identity — reverse-namespaced `<namespace>.<name>`
+    // (ecosystem-hardening #453, RFC "Provider identity & collision rules").
+    // null is an official provider, so it lives under the reserved `labelle.`
+    // namespace. Must match `labelle.<enum tag>` for the built-in null backend.
+    .id = "labelle.null",
+
+    // Capabilities this provider advertises (#453, RFC "Capability negotiation").
+    // A non-empty set OPTS IN to enforcement (a project requiring a capability
+    // null lacks is a hard error at resolve time instead of a deep compile
+    // error). null is the headless test/CI backend, so `.headless` (runs with
+    // no window surface) is its ONE genuine, defining capability.
+    //
+    // Deliberately NOT declared (every op is a silent no-op — claiming these
+    // would mis-advertise the backend):
+    //   - .screenshots         — `takeScreenshot` writes no file.
+    //   - .compressed_textures — no `isCompressed`/`uploadCompressed`.
+    //   - .fonts               — no `decodeFont`/`uploadFontAtlas`.
+    //   - .gamepad_polling      — gamepad reads are all quiescent (false/0).
+    //   - .surface_loss         — no `surfaceLost`/`surfaceRestored`.
+    //   - .audio_ogg            — decodes no audio.
+    //   - .wasm/.android/.ios   — headless desktop only (sole template is
+    //                             `templates/headless.txt`; no mobile/web target).
+    .capabilities = .{.headless},
+
     .dir_name = "null",
     .dep_name = "labelle_null",
     .loop_style = .loop,

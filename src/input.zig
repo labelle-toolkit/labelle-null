@@ -2,6 +2,13 @@
 /// with no-op implementations. Every key is "up", every button is "released",
 /// the mouse sits at (0,0). Any script that reads input on the null backend
 /// observes a quiescent device — useful for deterministic tick-loop tests.
+// Contract-version tag (labelle-assembler#453 item 1). The assembler emits a
+// directional `@compileError` version assert in the generated game's main.zig
+// comparing this against labelle-core's `INPUT_CONTRACT_VERSION`. null declares
+// the required input core (`isKeyDown`/`isKeyPressed`), so `core.assertInput`
+// passes. v1 is the initial revision of the contract.
+pub const targets_input_contract: u32 = 1;
+
 const std = @import("std");
 
 // ── Keyboard ──────────────────────────────────────────────
