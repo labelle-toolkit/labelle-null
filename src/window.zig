@@ -4,6 +4,13 @@
 /// call `windowShouldClose` in its main loop — it bounds frames via a
 /// fixed counter — so this module exists primarily to satisfy module
 /// resolution for shared codegen / plugin code.
+// Contract-version tags (labelle-assembler#453 item 1). The assembler emits
+// directional `@compileError` version asserts in the generated game's main.zig
+// comparing this against labelle-core's `WINDOW_CONTRACT_VERSION`. null declares
+// the canonical window surface (`width`/`height`/`frameDuration`/`requestQuit`),
+// so `core.assertWindow` passes. v1 is the initial revision of the contract.
+pub const targets_window_contract: u32 = 1;
+
 const std = @import("std");
 
 pub const ConfigFlags = struct {

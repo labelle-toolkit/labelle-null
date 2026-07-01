@@ -2,6 +2,20 @@
 /// with no-op implementations. Sound and music handles are issued from a
 /// monotonic counter so unique-id semantics still hold; no PCM data is
 /// loaded or played.
+// Contract-version tag (labelle-assembler#453 item 1). The assembler emits a
+// directional `@compileError` version assert in the generated game's main.zig
+// comparing this against labelle-core's `AUDIO_PLAYBACK_CONTRACT_VERSION`. null
+// implements the audio **playback** surface (`playSound`/`stopSound` required,
+// the rest capability-gated — all present as no-ops here), so it declares that.
+//
+// It does NOT declare `targets_audio_loader_contract`: the loader surface is the
+// decode path (`decodeAudio`/`uploadSound`/`DecodedAudio`/`Sound`), which null
+// does not implement — `loadSound` just issues a counter id and ignores the
+// path. Claiming the loader contract would over-state what the headless backend
+// provides. The assembler's version assert is `@hasDecl`-guarded, so omitting
+// the tag simply skips the audio-loader check for null (no flag day).
+pub const targets_audio_playback_contract: u32 = 1;
+
 const std = @import("std");
 
 var next_sound_id: u32 = 1;
