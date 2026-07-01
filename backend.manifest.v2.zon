@@ -25,7 +25,7 @@
     // Carried forward UNCHANGED from the v1 manifest — null's ONE defining
     // capability. A non-empty set opts into resolve-time capability enforcement;
     // v2 must not drop capability negotiation.
-    .capabilities = .{.headless},
+    .capabilities = .{ .headless },
 
     // root_alias defaults to `backend_<name>`, so the generated root imports
     // these as `backend_gfx`/`backend_input`/… exactly as the enum path does.
