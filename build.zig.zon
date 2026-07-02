@@ -6,12 +6,18 @@
     .dependencies = .{
         // labelle-core supplies the window/input/render contracts + behavioral
         // conformance suites the test-only `src/contract_check.zig` compile-proves
-        // this backend against (labelle-assembler#502). Test-only: the shipped
-        // backend modules do not import it. Pinned to v1.22.0 (has
+        // this backend against (labelle-assembler#502). Pinned to v1.22.0 (has
         // window_contract.zig + conformance.zig).
+        //
+        // Lazy + test-only: a generated game that consumes labelle-null evaluates
+        // this build.zig only to expose the backend modules — none of which import
+        // labelle-core — so ordinary/offline production builds must NOT fetch it.
+        // Only the `test` step's contract_check materializes it (via
+        // b.lazyDependency), keeping normal module resolution dependency-free.
         .labelle_core = .{
             .url = "https://github.com/labelle-toolkit/labelle-core/archive/refs/tags/v1.22.0.tar.gz",
             .hash = "labelle_core-1.22.0-OauRcMkFBgCFj-reWQnyVqtZBYsfbSFQkHY971oQduWl",
+            .lazy = true,
         },
     },
     .paths = .{

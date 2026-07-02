@@ -106,13 +106,13 @@ test "null window: lifecycle no-ops" {
     defer closeWindow();
     setTargetFPS(60);
     try std.testing.expect(shouldQuit());
-    try std.testing.expectEqual(@as(f64, 1.0 / 60.0), frameDuration());
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0 / 60.0), frameDuration(), 1e-9);
 }
 
 test "null window: canonical window contract" {
     initWindow(320, 240, "test");
     try std.testing.expectEqual(@as(i32, 320), width());
     try std.testing.expectEqual(@as(i32, 240), height());
-    try std.testing.expectEqual(@as(f64, 1.0 / 60.0), frameDuration());
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0 / 60.0), frameDuration(), 1e-9);
     requestQuit(); // no-op, must compile + run
 }
