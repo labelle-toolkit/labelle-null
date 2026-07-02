@@ -13,14 +13,14 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // ── Gfx backend module ──────────────────────────────────────────
-    _ = b.addModule("gfx", .{
+    const gfx_mod = b.addModule("gfx", .{
         .root_source_file = b.path("src/gfx.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     // ── Input backend module ────────────────────────────────────────
-    _ = b.addModule("input", .{
+    const input_mod = b.addModule("input", .{
         .root_source_file = b.path("src/input.zig"),
         .target = target,
         .optimize = optimize,
@@ -34,7 +34,7 @@ pub fn build(b: *std.Build) void {
     });
 
     // ── Window backend module ───────────────────────────────────────
-    _ = b.addModule("window", .{
+    const window_mod = b.addModule("window", .{
         .root_source_file = b.path("src/window.zig"),
         .target = target,
         .optimize = optimize,
@@ -55,4 +55,28 @@ pub fn build(b: *std.Build) void {
         });
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
+
+    // ── labelle-core contract conformance self-check (#502) ─────────
+    // Dedicated test-only module that imports labelle-core and compile-proves
+    // this backend satisfies assertWindow/assertInput/assertBackend (the same
+    // gates the assembler emits into every generated main.zig). The shipped
+    // src/window.zig deliberately does NOT import labelle-core, keeping the
+    // module graph consumed by generated games untouched. null links no C, so
+    // the behavioral runWindowSuite RUNS host-side.
+    const core_dep = b.dependency("labelle_core", .{ .target = target, .optimize = optimize });
+    const core_mod = core_dep.module("labelle-core");
+    const contract_check = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/contract_check.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "labelle_core", .module = core_mod },
+                .{ .name = "window", .module = window_mod },
+                .{ .name = "input", .module = input_mod },
+                .{ .name = "gfx", .module = gfx_mod },
+            },
+        }),
+    });
+    test_step.dependOn(&b.addRunArtifact(contract_check).step);
 }

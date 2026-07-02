@@ -5,7 +5,7 @@
 // `defer`-bound teardown (PluginControllers.deinit, GPA leak check,
 // preview `bye`) actually runs.
 //
-// Why a frame counter instead of `window.windowShouldClose()`: there is
+// Why a frame counter instead of `window.shouldQuit()`: there is
 // no window. Why no `g.render()`: no draw surface. Why no sleep: tests
 // want determinism; CI wants a bounded wall-clock. The preview control
 // plane (LABELLE_PREVIEW=host:port → hello/heartbeat/bye) still wires

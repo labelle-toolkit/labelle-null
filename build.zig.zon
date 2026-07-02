@@ -1,9 +1,19 @@
 .{
     .fingerprint = 0x2996c87d555f12e4,
     .name = .labelle_null,
-    .version = "0.2.0",
+    .version = "0.3.0",
     .minimum_zig_version = "0.16.0",
-    .dependencies = .{},
+    .dependencies = .{
+        // labelle-core supplies the window/input/render contracts + behavioral
+        // conformance suites the test-only `src/contract_check.zig` compile-proves
+        // this backend against (labelle-assembler#502). Test-only: the shipped
+        // backend modules do not import it. Pinned to v1.22.0 (has
+        // window_contract.zig + conformance.zig).
+        .labelle_core = .{
+            .url = "https://github.com/labelle-toolkit/labelle-core/archive/refs/tags/v1.22.0.tar.gz",
+            .hash = "labelle_core-1.22.0-OauRcMkFBgCFj-reWQnyVqtZBYsfbSFQkHY971oQduWl",
+        },
+    },
     .paths = .{
         "build.zig",
         "build.zig.zon",
