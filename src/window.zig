@@ -1,7 +1,7 @@
 /// Null window backend — satisfies the engine windowing contract with
 /// no-op implementations. Headless: there is no actual window, no draw
 /// surface, no message pump. The generated null-backend `main()` does NOT
-/// call `windowShouldClose` in its main loop — it bounds frames via a
+/// call `shouldQuit` in its main loop — it bounds frames via a
 /// fixed counter — so this module exists primarily to satisfy module
 /// resolution for shared codegen / plugin code.
 // Contract-version tags (labelle-assembler#453 item 1). The assembler emits
@@ -37,8 +37,9 @@ pub fn closeWindow() void {}
 // (labelle-assembler#386). The headless main loop never calls these (it bounds
 // frames with a counter), but a conformant backend declares the canonical
 // surface — `width`/`height`/`frameDuration`/`requestQuit` — so it satisfies
-// `core.assertWindow`. The legacy `windowShouldClose`/`getFrameTime` names
-// below are kept for the shared null-backend codegen that still references them.
+// `core.assertWindow`. null is a loop-model backend (declares `shouldQuit`) and
+// exposes the canonical `beginFrame`/`endFrame` no-ops for template convergence
+// with the real backends.
 
 /// Current framebuffer width (the value passed to `initWindow`).
 pub fn width() i32 {
@@ -60,7 +61,8 @@ pub fn requestQuit() void {}
 /// Always returns true so any consumer that does happen to call this on
 /// the null backend exits its loop on the first iteration. The generated
 /// null-backend main() doesn't use this — it caps frames with a counter.
-pub fn windowShouldClose() bool {
+/// Its presence marks null as a loop-model backend (`Window(Impl).ownsLoop()`).
+pub fn shouldQuit() bool {
     return true;
 }
 
@@ -82,13 +84,9 @@ pub fn setTargetFPS(fps: i32) void {
     _ = fps;
 }
 
-pub fn getFrameTime() f32 {
-    return 1.0 / 60.0;
-}
+pub fn beginFrame() void {}
 
-pub fn beginDrawing() void {}
-
-pub fn endDrawing() void {}
+pub fn endFrame() void {}
 
 pub fn clearBackground(r: u8, g: u8, b: u8, a: u8) void {
     _ = .{ r, g, b, a };
@@ -107,14 +105,14 @@ test "null window: lifecycle no-ops" {
     initWindow(320, 240, "test");
     defer closeWindow();
     setTargetFPS(60);
-    try std.testing.expect(windowShouldClose());
-    try std.testing.expectEqual(@as(f32, 1.0 / 60.0), getFrameTime());
+    try std.testing.expect(shouldQuit());
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0 / 60.0), frameDuration(), 1e-9);
 }
 
 test "null window: canonical window contract" {
     initWindow(320, 240, "test");
     try std.testing.expectEqual(@as(i32, 320), width());
     try std.testing.expectEqual(@as(i32, 240), height());
-    try std.testing.expectEqual(@as(f64, 1.0 / 60.0), frameDuration());
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0 / 60.0), frameDuration(), 1e-9);
     requestQuit(); // no-op, must compile + run
 }
